@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Left Hamburger Menu</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f2e6d7;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 30px;
+      height: 25px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      /* Sidebar + content */
+      grid-template-rows: auto;
+      height: 100vh;
+    }
+
+    .menu-toggle span {
+      display: block;
+      height: 4px;
+      background: #ececec;
+      margin: 5px 0;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* When active, turn into an "X" */
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+      background: #ffffff;
+
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+      background: #ffffff;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+      background: #ffffff;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: -200px;
+      width: 200px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      font-size: medium;
+      font-weight: 600;
+      padding-top: 60px;
+      transition: left 0.3s ease;
+    }
+
+    nav ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    nav ul li {
+      padding: 15px 20px;
+      border-bottom: 1px solid #555;
+      cursor: pointer;
+    }
+
+    nav ul li:hover {
+      background-color: #000000;
+    }
+
+    nav.active {
+      left: 0;
+
+    }
+
+    .heading {
+      background-color: #350410de;
+      height: 60px;
+      color: white;
+      padding-top: 14px;
+      margin-top: 0px;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    /*page design */
+    .page {
+      display: flex;
+      justify-content: center;
+      margin-left: -200px;
+    }
+
+    table,
+    th,
+    td {
+      border: 3px solid #350410de;
+      border-collapse: collapse;
+      padding: 6px;
+      text-align: center;
+      width: 600px;
+      font-size: 20px;
+
+    }
+
+    #scan-btn,
+    #scan-next-btn {
+      background-color: #350410de;
+      color: white;
+      border: 2px solid #350410de;
+      font-weight: 600;
+      border-radius: 9px;
+      transition: all 0.3s ease;
+
+    }
+
+    #scan-btn:hover,
+    #online-btn:hover,
+    #cash-btn:hover,
+    #scan-next-btn:hover {
+      background-color: #ffffff;
+      color: #350410de;
+      border: 2px solid #350410de;
+
+    }
+
+    #scan-btn,
+    #scan-next-btn {
+      margin: 10px 0;
+      padding: 10px 15px;
+      font-size: 16px;
+      padding: 10px 20px;
+    }
+
+    .qty-btn {
+      margin: 0 5px;
+      padding: 2px 6px;
+    }
+
+    .list-head {
+      text-align: center;
+      font-size: 30px;
+      color: #350410de;
+    }
+
+    #cash-btn,
+    #online-btn {
+      background-color: #350410de;
+      color: white;
+      border: 2px solid #350410de;
+      font-weight: 600;
+      border-radius: 9px;
+      transition: all 0.3s ease;
+      font-size: 16px;
+
+      padding: 10px 20px;
+    }
+
+    .payment-buttons {
+      display: flex;
+      justify-content: space-evenly;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <center>
+    <h1 class="heading">Smart Cart</h1>
+  </center>
+  <!-- Hamburger Icon -->
+  <div class="container">
+    <div>
+      <div class="menu-toggle" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <!-- Slide-in Navigation Menu -->
+      <nav id="sideMenu">
+        <ul>
+          <li></a>Home</li>
+          <li>About Us</li>
+          <li>Contact</li>
+          <li>Exit</li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="page">
+      <div class="list-content">
+        <!-- Product Table -->
+        <h3 class="list-head">Product List</h3>
+        <table id="product-table">
+          <thead>
+            <tr>
+              <th>Barcode</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <!-- Total Amount Section -->
+        <h3 class="list-head">Total: ₹<span id="total-amount">0.00</span></h3>
+
+        <!-- Buttons -->
+        <button id="scan-btn">Scan Product</button>
+        <button id="scan-next-btn" style="display:none;">Scan Next Product</button>
+
+        <!-- Payment Buttons -->
+        <div class="payment-buttons">
+          <button onclick="handleCashPay()" id="cash-btn">Cash Pay</button>
+          <button onclick="handleOnlinePay()" id="online-btn">Online Pay</button>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("sideMenu");
+      const toggle = document.querySelector(".menu-toggle");
+
+      menu.classList.toggle("active");
+      toggle.classList.toggle("active");
+    }
+    /* scaner products */
+    const html5QrCode = new Html5Qrcode("reader");
+    const scannedProducts = {};
+
+    document.getElementById('scan-btn').onclick = () => {
+      document.getElementById('scanner-container').style.display = 'block';
+      document.getElementById('scan-btn').style.display = 'none';
+      startScanner();
+    };
+
+    document.getElementById('scan-next-btn').onclick = () => {
+      document.getElementById('scanner-container').style.display = 'block';
+      startScanner();
+    };
+
+    function startScanner() {
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          html5QrCode.stop();
+          document.getElementById('scanner-container').style.display = 'none';
+          document.getElementById('scan-next-btn').style.display = 'inline-block';
+          fetchProductFromServer(decodedText);
+        },
+        (err) => console.warn(err)
+      );
+    }
+
+    function fetchProductFromServer(barcode) {
+      fetch(`/api/product/${barcode}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            if (scannedProducts[barcode]) {
+              scannedProducts[barcode].qty += 1;
+            } else {
+              scannedProducts[barcode] = {
+                name: data.product.name,
+                price: parseFloat(data.product.price),
+                qty: 1
+              };
+            }
+            updateTable();
+          } else {
+            alert("Product not found!");
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function updateTable() {
+      const table = document.querySelector("#product-table tbody");
+      table.innerHTML = '';
+      let grandTotal = 0;
+
+      for (const [barcode, product] of Object.entries(scannedProducts)) {
+        const total = product.price * product.qty;
+        grandTotal += total;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+      <td>${barcode}</td>
+      <td>${product.name}</td>
+      <td>₹${product.price.toFixed(2)}</td>
+      <td>
+        <button class="qty-btn" onclick="updateQty('${barcode}', -1)">-</button>
+        ${product.qty}
+        <button class="qty-btn" onclick="updateQty('${barcode}', 1)">+</button>
+      </td>
+      <td>₹${total.toFixed(2)}</td>
+      <td><button onclick="deleteProduct('${barcode}')">Delete</button></td>
+    `;
+        table.appendChild(row);
+      }
+
+      document.getElementById('total-amount').textContent = grandTotal.toFixed(2);
+    }
+
+
+    function updateQty(barcode, change) {
+      if (scannedProducts[barcode]) {
+        scannedProducts[barcode].qty += change;
+        if (scannedProducts[barcode].qty <= 0) {
+          delete scannedProducts[barcode];
+        }
+        updateTable();
+      }
+    }
+
+    function deleteProduct(barcode) {
+      delete scannedProducts[barcode];
+      updateTable();
+    }
+
+    /* payment script */
+    function handleCashPay() {
+      alert("Please proceed to the counter for cash payment.");
+      generatePDFReceipt();
+      // Optionally clear cart
+    }
+
+    function handleOnlinePay() {
+      alert("Redirecting to UPI apps like GPay or PhonePe...");
+      window.location.href = "upi://pay?pa=merchant@upi&pn=SmartCart&am=" +
+        document.getElementById('total-amount').textContent + "&cu=INR";
+
+      // Delay PDF generation after redirection (optional)
+      setTimeout(generatePDFReceipt, 3000);
+    }
+
+    async function generatePDFReceipt() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Smart Cart Receipt", 70, 10);
+
+      doc.setFontSize(12);
+      doc.text("==========================================", 10, 15);
+
+      let y = 25;
+      doc.text("Barcode       Name        Price   Qty   Total", 10, y);
+      y += 10;
+
+      let grandTotal = 0;
+      for (const [barcode, product] of Object.entries(scannedProducts)) {
+        const line = `${barcode}  ${product.name}  ₹${product.price.toFixed(2)}  ${product.qty}  ₹${(product.price * product.qty).toFixed(2)}`;
+        doc.text(line, 10, y);
+        y += 8;
+        grandTotal += product.price * product.qty;
+      }
+
+      y += 10;
+      doc.text(`Total Amount: ₹${grandTotal.toFixed(2)}`, 10, y);
+
+      y += 20;
+      doc.text("Thank you for shopping with us!", 50, y);
+
+      doc.save("receipt.pdf");
+      
+    }
+
+  </script>
+</body>
+
+</html>
